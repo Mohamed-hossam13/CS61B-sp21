@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author Mohamed Hossam
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -58,7 +58,7 @@ public class Model extends Observable {
         return board.size();
     }
 
-    /** Return true iff the game is over (there are no moves, or
+    /** Return true if the game is over (there are no moves, or
      *  there is a tile with value 2048 on the board). */
     public boolean gameOver() {
         checkGameOver();
@@ -94,8 +94,8 @@ public class Model extends Observable {
         setChanged();
     }
 
-    /** Tilt the board toward SIDE. Return true iff this changes the board.
-     *
+    /*********************** Fourth Task *************************
+     * Tilt the board toward SIDE. Return true iff this changes the board.
      * 1. If two Tile objects are adjacent in the direction of motion and have
      *    the same value, they are merged into one Tile of twice the original
      *    value and that new value is added to the score instance variable
@@ -105,19 +105,53 @@ public class Model extends Observable {
      * 3. When three adjacent tiles in the direction of motion have the same
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
+     *
+     * Points:
+     * We will loop over the board row by row for a single column
+     * The function validRow() will return the valid row that a tile can move to
+     * The board.move() will return true if a merged operation happened and this when
+     * we will update the score if the return is true
      * */
+    public int validRow(int c, int r, Tile t) {
+        int size = board.size();
+        int index = -1;
+        for (int row = r + 1; row < size; ++row) {
+            Tile tile = board.tile(c, row);
+            if (tile != null && tile.value() != t.value())
+                break;
+            index = row;
+        }
+        return index;
+    }
+
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
+        board.setViewingPerspective(side);
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
+        //todo: tricky merge part
 
+        int size = board.size();
+        for (int c = 0; c < size; ++c) {
+            for (int r = size-2; r >= 0; --r) {
+                Tile t = board.tile(c, r);
+                if (t == null)
+                    continue;
+                int vRow = validRow(c, r, t);
+                if (vRow >= 0) {
+                    boolean merged = board.move(c, vRow, t);
+                    if (merged) {
+                        this.score += board.tile(c, vRow).value();
+                    }
+                    changed = true;
+                }
+            }
+        }
         checkGameOver();
         if (changed) {
             setChanged();
         }
+        board.setViewingPerspective(Side.NORTH);
         return changed;
     }
 
@@ -133,32 +167,87 @@ public class Model extends Observable {
         return maxTileExists(b) || !atLeastOneMoveExists(b);
     }
 
-    /** Returns true if at least one space on the Board is empty.
+    /************* First Task ****************
+     *  Returns true if at least one space on the Board is empty.
      *  Empty spaces are stored as null.
+     *  Looping over the 2D board of tiles and check if the tile is empty
+     *  The Board class has a private instance of the Tile class
+     *  so we cannot access directly, we will use the tile method that
+     *  returns an object of type Tile
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j) {
+                Tile tile = b.tile(j, i);
+                if(tile == null)
+                    return true;
+            }
+        }
         return false;
     }
 
-    /**
+    /************* Second Task ****************
      * Returns true if any tile is equal to the maximum valid value.
      * Maximum valid value is given by MAX_PIECE. Note that
      * given a Tile object t, we get its value with t.value().
+     * Same as the previous task, we will loop over the 2D board
+     * and check if the tile value is equal to the MAX_PIECE
+     * We must check also if the tile is null so we don't get nullPointerException
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j) {
+                Tile tile = b.tile(j, i);
+                if (tile == null)
+                    continue;
+                if (tile.value() == MAX_PIECE)
+                    return true;
+            }
+        }
         return false;
     }
 
-    /**
+    /************* Third Task ****************
      * Returns true if there are any valid moves on the board.
      * There are two ways that there can be valid moves:
      * 1. There is at least one empty space on the board.
      * 2. There are two adjacent tiles with the same value.
+     * A helper method isValidPos() to check if the pos is valid or not
+     * Two direction arrays dr & dc to check the 4-neighbors for every tile
      */
+    public static boolean isValidPos(int col, int row, Board b){
+        int size = b.size();
+        if ( row < 0 || row >= size)
+            return false;
+        else if (col < 0 || col >= size)
+            return false;
+        return true;
+    }
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        if(emptySpaceExists(b))
+            return true;
+
+        int[] dr = new int[] {-1, 0, 1, 0};
+        int[] dc = new int[] {0, -1, 0, 1};
+        int size = b.size();
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < size; ++j) {
+                Tile tile = b.tile(j, i);
+                if(tile == null)
+                    continue;
+                for (int d = 0; d < 4; ++d) {
+                    int nRow = i + dr[d];
+                    int nCol = j + dc[d];
+                    if(isValidPos(nCol, nRow, b)){
+                        Tile newTile = b.tile(nCol, nRow);
+                        if(tile.value() == newTile.value())
+                            return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
