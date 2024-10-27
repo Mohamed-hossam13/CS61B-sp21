@@ -2,7 +2,7 @@ package deque;
 
 import java.util.Iterator;
 
-public class LinkedListDeque<T> {
+public class LinkedListDeque<T> implements Iterable<T>, Deque<T> {
     private class Node{
         private T item;
         private Node prev;
@@ -28,10 +28,34 @@ public class LinkedListDeque<T> {
         size = 0;
     }
 
+    private class LinkedListDequeIterator implements Iterator<T> {
+        Node cur;
+        int count;
+
+        public LinkedListDequeIterator() {
+            cur = sentinel.next;
+            count = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return count < size;
+        }
+
+        @Override
+        public T next() {
+            T item = cur.item;
+            cur = cur.next;
+            ++count;
+            return item;
+        }
+    }
+
     //A method to add an item from the front
     //First, we need to handle the next and prev of the first node
     //Second, we need handle the prev of the sentinel.next
     //Third, we will handle the sentinel.next to point to the new node
+    @Override
     public void addFirst(T item) {
         Node newNode = new Node(item);
         newNode.next = sentinel.next;
@@ -47,6 +71,7 @@ public class LinkedListDeque<T> {
     //First, we need to handle the next and prev of the new node
     //Second, we need to handle the next of prev of the sentinel which was the last node
     //Third, we will handle the prev of the sentinel to point to the last node
+    @Override
     public void addLast(T item) {
         Node newNode = new Node(item);
         newNode.next = sentinel;
@@ -61,6 +86,7 @@ public class LinkedListDeque<T> {
     //A method to remove the first item in the list and return its value
     //First, we need to handle the prev of the next of the first node
     //Second, we need to handle sentinel.next to point to the new first node
+    @Override
     public T removeFirst() {
         if (size == 0)
             return null;
@@ -77,6 +103,7 @@ public class LinkedListDeque<T> {
     //A method to remove the last item in the list and return its value
     //First, we need to handle the next of the new last node
     //Second, we need to handle the prev of the sentinel to point to the last node
+    @Override
     public T removeLast() {
         if (size == 0)
             return null;
@@ -93,6 +120,7 @@ public class LinkedListDeque<T> {
     //A method to get the ith element in the deque using iteration
     //First, we need a reference for the first node
     //Second, we will loop till the given index
+    @Override
     public T get(int index) {
         if (index >= size || index < 0)
             return null;
@@ -121,38 +149,44 @@ public class LinkedListDeque<T> {
     }
 
     //A method to print all element in the deque
+    @Override
     public void printDeque() {
         Node cur = sentinel.next;
-        System.out.print("[");
         for (int i = 0; i < size; ++i) {
             if (i != size - 1) {
-                System.out.print(cur.item + ", ");
+                System.out.print(cur.item + " ");
             }
             else
                 System.out.print(cur.item);
             cur = cur.next;
         }
-        System.out.println("]");
-    }
-
-    //A method to return true if the list is empty or false if it has elements
-    public boolean isEmpty() {
-        return size == 0;
+        System.out.println();
     }
 
     //A method to return the size of the list
+    @Override
     public int size() {
         return size;
     }
 
     public Iterator<T> iterator() {
-        //todo: write a method to return an iterator
-        return null;
+        return new LinkedListDequeIterator();
     }
 
     @Override
     public boolean equals(Object o) {
-        //todo: write a method to return if the content of a given deque is equal to another deque
-        return true;
+        if (this == o) { return true; }
+        if (o instanceof LinkedListDeque list) {
+            if (this.size != list.size)
+                return false;
+            Node cur1 = sentinel.next;
+            for (Object x : list) {
+                if (x != cur1.item)
+                    return false;
+                cur1 = cur1.next;
+            }
+            return true;
+        }
+        return false;
     }
 }
