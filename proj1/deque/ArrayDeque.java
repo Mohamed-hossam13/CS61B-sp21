@@ -2,7 +2,6 @@ package deque;
 
 import edu.princeton.cs.algs4.StdOut;
 import org.checkerframework.framework.qual.SubtypeOf;
-
 import java.util.Iterator;
 
 //To make the arrayDeque more standard in being iterable,
@@ -38,6 +37,10 @@ public class ArrayDeque<T> implements Iterable<T>, Deque<T> {
             T item = items[curPos++];
             ++count;
             return item;
+        }
+
+        @Override
+        public void remove() {
         }
     }
 
